@@ -1644,7 +1644,7 @@ func attackWorker(target, mode string, done chan struct{}, stats *atomicCounter,
 }
 EOF
 
-sed -i "s/'/\"/g" main.go 
+sed -i '/acceptLanguages =/,/}/ { s/'\''/"/g; s/[^,]"[[:space:]]*$/",/; }' main.go
 
 if [ ! -f "main.go" ]; then
     echo -e " ${RED}✗ Error: Failed to create main.go${NC}"
