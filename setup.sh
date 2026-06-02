@@ -1644,6 +1644,8 @@ func attackWorker(target, mode string, done chan struct{}, stats *atomicCounter,
 }
 EOF
 
+sed -i "s/'/\"/g" main.go 
+
 if [ ! -f "main.go" ]; then
     echo -e " ${RED}✗ Error: Failed to create main.go${NC}"
     exit 1
